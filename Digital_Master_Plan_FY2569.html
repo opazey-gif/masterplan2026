@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แผนแม่บทดิจิทัลและเทคโนโลยีสารสนเทศ พ.ศ. 2569</title>
+    <title>แผนปฏิบัติการดิจิทัลรายยุทธศาสตร์ พ.ศ. 2569 (Updated)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,408 +12,567 @@
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
             height: 300px;
             max-height: 300px;
             margin: 0 auto;
         }
         .logic-step {
-            transition: all 0.3s ease;
+            transition: all 0.2s ease-in-out;
         }
         .logic-step:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .fade-in {
-            animation: fadeIn 0.5s ease-in;
+            animation: fadeIn 0.4s ease-out;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
         }
         .active-nav {
             background-color: #e0f2fe; /* sky-100 */
             color: #0369a1; /* sky-700 */
-            border-left: 4px solid #0284c7; /* sky-600 */
+            border-right: 4px solid #0284c7; /* sky-600 */
         }
     </style>
-    <!-- Chosen Palette: Modern Professional (Slate, Sky, Emerald, Indigo) -->
-    <!-- Application Structure Plan: Dashboard layout with sidebar navigation. 
-         1. Overview: High-level summary, total budget chart, and theme explanation.
-         2. Strategic Pillars: Detailed view of 3 pillars. Users select a project to see its 'Logic Model' flow (Input->Impact) visually.
-         3. Measurements: Comparison table for KPI vs OKR.
-         4. Risk Management: Card-based view of risks and mitigation plans.
-         This structure helps users navigate from big picture to specific project logic without getting lost in text. -->
-    <!-- Visualization & Content Choices: 
-         - Overview: Doughnut Chart for Budget Allocation (Inform/Compare).
-         - Logic Model: Flow-like cards using CSS Grid/Flex to show the causal link from Budget to Impact (Organize/Relationships).
-         - Measurements: Comparison Table/Cards (Compare).
-         - Risks: Alert-style cards (Inform). 
-         - JS handles data injection and view switching. NO SVG/Mermaid. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen flex overflow-hidden">
+<body class="bg-slate-50 text-slate-800 h-screen flex overflow-hidden selection:bg-sky-200 selection:text-sky-900">
 
-    <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-white shadow-lg z-10 hidden md:flex flex-col h-full border-r border-slate-200">
-        <div class="p-6 border-b border-slate-100">
-            <h1 class="text-xl font-bold text-slate-800 leading-tight">Digital Plan <span class="text-sky-600">2569</span></h1>
-            <p class="text-xs text-slate-500 mt-1">Modernize, Stabilize & Govern</p>
+    <!-- Sidebar -->
+    <aside class="w-72 bg-white shadow-xl z-20 hidden lg:flex flex-col h-full border-r border-slate-200 flex-shrink-0">
+        <div class="p-6 border-b border-slate-100 bg-slate-50">
+            <h1 class="text-xl font-bold text-slate-800 leading-tight">Strategic IT Plan</h1>
+            <p class="text-sm font-medium text-sky-600 mt-1">FY 2569 (Updated)</p>
         </div>
-        <nav class="flex-1 overflow-y-auto py-4">
-            <ul class="space-y-1">
-                <li>
-                    <button onclick="switchView('overview')" id="nav-overview" class="w-full text-left px-6 py-3 text-sm font-medium hover:bg-slate-50 transition-colors active-nav">
-                        📊 ภาพรวม (Overview)
-                    </button>
-                </li>
-                <li>
-                    <button onclick="switchView('modernize')" id="nav-modernize" class="w-full text-left px-6 py-3 text-sm font-medium hover:bg-slate-50 transition-colors text-slate-600">
-                        🚀 1. Modernize (ปรับปรุง)
-                    </button>
-                </li>
-                <li>
-                    <button onclick="switchView('stabilize')" id="nav-stabilize" class="w-full text-left px-6 py-3 text-sm font-medium hover:bg-slate-50 transition-colors text-slate-600">
-                        🛡️ 2. Stabilize (เสถียรภาพ)
-                    </button>
-                </li>
-                <li>
-                    <button onclick="switchView('govern')" id="nav-govern" class="w-full text-left px-6 py-3 text-sm font-medium hover:bg-slate-50 transition-colors text-slate-600">
-                        ⚖️ 3. Govern & Empower
-                    </button>
-                </li>
-                <li>
-                    <button onclick="switchView('measurements')" id="nav-measurements" class="w-full text-left px-6 py-3 text-sm font-medium hover:bg-slate-50 transition-colors text-slate-600">
-                        📈 การวัดผล (KPIs vs OKRs)
-                    </button>
-                </li>
-                <li>
-                    <button onclick="switchView('risks')" id="nav-risks" class="w-full text-left px-6 py-3 text-sm font-medium hover:bg-slate-50 transition-colors text-slate-600">
-                        ⚠️ การบริหารความเสี่ยง
-                    </button>
-                </li>
-            </ul>
+        
+        <nav class="flex-1 overflow-y-auto py-4 space-y-1" id="sidebar-nav">
+            <!-- Nav Items injected via JS -->
         </nav>
-        <div class="p-4 border-t border-slate-100">
-            <div class="bg-slate-100 rounded-lg p-3">
-                <p class="text-xs font-semibold text-slate-600">งบประมาณรวม</p>
-                <p class="text-lg font-bold text-slate-800">6.80 ล้านบาท</p>
+
+        <div class="p-4 border-t border-slate-100 bg-slate-50">
+            <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Budget</p>
+                <div class="flex items-baseline mt-1">
+                    <span class="text-xl font-bold text-slate-800">6.80</span>
+                    <span class="text-xs text-slate-500 ml-1">ล้านบาท</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                    <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 15%"></div>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1 text-right">เบิกจ่ายแล้ว ~15%</p>
             </div>
         </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto h-full p-4 md:p-8 relative">
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden">
         
         <!-- Mobile Header -->
-        <div class="md:hidden flex justify-between items-center mb-6">
-            <h1 class="text-lg font-bold">Digital Plan 2569</h1>
-            <button onclick="toggleMobileMenu()" class="text-slate-600 p-2 border rounded">เมนู</button>
+        <header class="lg:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center z-20 shadow-sm">
+            <h1 class="font-bold text-slate-800">IT Plan 2569</h1>
+            <button onclick="toggleMobileMenu()" class="text-slate-500 hover:text-slate-700 p-1 border rounded bg-slate-50">
+                Menu
+            </button>
+        </header>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden absolute inset-0 bg-slate-800/50 z-30 lg:hidden" onclick="toggleMobileMenu()">
+            <div class="absolute right-0 top-0 bottom-0 w-64 bg-white shadow-xl flex flex-col" onclick="event.stopPropagation()">
+                <div class="p-4 border-b">
+                    <h2 class="font-bold">Menu</h2>
+                </div>
+                <nav class="flex-1 overflow-y-auto p-2 space-y-1" id="mobile-nav-list">
+                    <!-- Mobile Nav Items injected via JS -->
+                </nav>
+            </div>
         </div>
-        
-        <!-- Mobile Menu (Hidden by default) -->
-        <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 right-0 bg-white shadow-xl z-20 border-b border-slate-200 p-4">
-            <button onclick="switchView('overview'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 hover:bg-slate-50">ภาพรวม</button>
-            <button onclick="switchView('modernize'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 hover:bg-slate-50">1. Modernize</button>
-            <button onclick="switchView('stabilize'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 hover:bg-slate-50">2. Stabilize</button>
-            <button onclick="switchView('govern'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 hover:bg-slate-50">3. Govern & Empower</button>
-            <button onclick="switchView('measurements'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 hover:bg-slate-50">การวัดผล</button>
-            <button onclick="switchView('risks'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 hover:bg-slate-50">ความเสี่ยง</button>
-        </div>
 
-        <!-- VIEW: OVERVIEW -->
-        <section id="view-overview" class="space-y-6 fade-in">
-            <header class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800 mb-2">บทสรุปผู้บริหาร</h2>
-                <p class="text-slate-600 text-lg">แผนแม่บทดิจิทัลฉบับปรับปรุงมาตรฐาน ปีงบประมาณ 2569 มุ่งเน้นการสร้างคุณค่าที่แท้จริงผ่านกรอบแนวคิด <span class="font-semibold text-sky-600">Logic Model</span> เพื่อเชื่อมโยงทรัพยากรสู่ผลสัมฤทธิ์</p>
-            </header>
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth" id="content-area">
+            
+            <!-- VIEW: DASHBOARD -->
+            <section id="view-dashboard" class="fade-in max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">บทสรุปผู้บริหาร (Executive Summary)</h2>
+                    <p class="text-slate-600 text-lg max-w-3xl">แผนแม่บทดิจิทัลฉบับปรับปรุง มุ่งเน้นการเชื่อมโยงทรัพยากรสู่ผลสัมฤทธิ์ผ่าน 5 ยุทธศาสตร์หลัก โดยใช้กรอบแนวคิด <span class="font-semibold text-sky-600 bg-sky-50 px-1 rounded">Logic Model</span> เพื่อความคุ้มค่าและตรวจสอบได้</p>
+                </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Total Weight</p>
+                        <p class="text-3xl font-bold text-slate-800 mt-1">100% <span class="text-sm font-normal text-slate-400">Re-weighted</span></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Budget Cap</p>
+                        <p class="text-3xl font-bold text-blue-600 mt-1">6.8 <span class="text-sm font-normal text-slate-400">ล้านบาท</span></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Training Target</p>
+                        <p class="text-3xl font-bold text-emerald-600 mt-1">80% <span class="text-sm font-normal text-slate-400">ของพนักงาน</span></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                        <p class="text-xs text-slate-500 font-bold uppercase">System Uptime</p>
+                        <p class="text-3xl font-bold text-indigo-600 mt-1">99.5% <span class="text-sm font-normal text-slate-400">SLA</span></p>
+                    </div>
+                </div>
+
+                <!-- Chart & Pillars Overview -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Chart -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-1">
+                        <h3 class="font-bold text-slate-800 mb-4 text-center">สัดส่วนงบประมาณ (Budget Allocation)</h3>
+                        <div class="chart-container">
+                            <canvas id="budgetChart"></canvas>
+                        </div>
+                        <div class="mt-4 text-center text-xs text-slate-500">
+                            *งบประมาณส่วนใหญ่ (91%) อยู่ใน Pillar 1 เพื่อการปรับปรุงโครงสร้างพื้นฐาน
+                        </div>
+                    </div>
+
+                    <!-- 5 Pillars List -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2">
+                        <h3 class="font-bold text-slate-800 mb-4">สถานะ 5 ยุทธศาสตร์ (Strategic Pillars Status)</h3>
+                        <div class="space-y-4">
+                            <!-- P1 -->
+                            <div onclick="switchView('pillar-1')" class="group cursor-pointer flex items-center p-3 rounded-lg border border-slate-100 hover:bg-sky-50 hover:border-sky-200 transition-colors">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg mr-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">1</div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-slate-700 group-hover:text-blue-700">Infrastructure</h4>
+                                    <p class="text-xs text-slate-500">MA, Hardware Refresh, HCI Study</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-mono font-bold text-slate-600">Weight: 82%</span>
+                                    <div class="text-[10px] text-emerald-600 font-medium">On Track</div>
+                                </div>
+                            </div>
+                            <!-- P2 -->
+                            <div onclick="switchView('pillar-2')" class="group cursor-pointer flex items-center p-3 rounded-lg border border-slate-100 hover:bg-sky-50 hover:border-sky-200 transition-colors">
+                                <div class="w-10 h-10 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center font-bold text-lg mr-4 group-hover:bg-cyan-600 group-hover:text-white transition-colors">2</div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-slate-700 group-hover:text-cyan-700">Information Systems</h4>
+                                    <p class="text-xs text-slate-500">Cloud Management, Dashboard</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-mono font-bold text-slate-600">Weight: 3%</span>
+                                    <div class="text-[10px] text-emerald-600 font-medium">Stable</div>
+                                </div>
+                            </div>
+                            <!-- P3 -->
+                            <div onclick="switchView('pillar-3')" class="group cursor-pointer flex items-center p-3 rounded-lg border border-slate-100 hover:bg-sky-50 hover:border-sky-200 transition-colors">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg mr-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">3</div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-slate-700 group-hover:text-indigo-700">Cybersecurity</h4>
+                                    <p class="text-xs text-slate-500">NIST Framework, Vendor Gov</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-mono font-bold text-slate-600">Weight: 5%</span>
+                                    <div class="text-[10px] text-amber-600 font-medium">On Process</div>
+                                </div>
+                            </div>
+                            <!-- P4 -->
+                            <div onclick="switchView('pillar-4')" class="group cursor-pointer flex items-center p-3 rounded-lg border border-slate-100 hover:bg-sky-50 hover:border-sky-200 transition-colors">
+                                <div class="w-10 h-10 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-bold text-lg mr-4 group-hover:bg-violet-600 group-hover:text-white transition-colors">4</div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-slate-700 group-hover:text-violet-700">Data Governance</h4>
+                                    <p class="text-xs text-slate-500">PDPA Policy, Data Catalog</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-mono font-bold text-slate-600">Weight: 2%</span>
+                                    <div class="text-[10px] text-amber-600 font-medium">On Process</div>
+                                </div>
+                            </div>
+                            <!-- P5 -->
+                            <div onclick="switchView('pillar-5')" class="group cursor-pointer flex items-center p-3 rounded-lg border border-slate-100 hover:bg-sky-50 hover:border-sky-200 transition-colors">
+                                <div class="w-10 h-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-lg mr-4 group-hover:bg-pink-600 group-hover:text-white transition-colors">5</div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-slate-700 group-hover:text-pink-700">People (Digital Literacy)</h4>
+                                    <p class="text-xs text-slate-500">AI Training, Phishing Sim</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-mono font-bold text-slate-600">Weight: 8%</span>
+                                    <div class="text-[10px] text-emerald-600 font-medium">On Track</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: DYNAMIC PILLAR DETAIL -->
+            <section id="view-pillar-detail" class="hidden fade-in max-w-6xl mx-auto">
+                <header class="mb-6 flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-4">
                     <div>
-                        <span class="inline-block px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-semibold mb-2">Pillar 1</span>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Modernize</h3>
-                        <p class="text-sm text-slate-500">ปรับปรุงโครงสร้างพื้นฐานให้ทันสมัย รองรับ Hybrid Work และเตรียมพร้อมสู่อนาคต</p>
-                    </div>
-                    <div class="mt-4 text-right">
-                        <span class="text-2xl font-bold text-slate-800">2.08 M</span> <span class="text-xs text-slate-500">THB</span>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <div>
-                        <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold mb-2">Pillar 2</span>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Stabilize</h3>
-                        <p class="text-sm text-slate-500">รักษาเสถียรภาพและความมั่นคงของระบบ ป้องกันเหตุขัดข้อง</p>
-                    </div>
-                    <div class="mt-4 text-right">
-                        <span class="text-2xl font-bold text-slate-800">4.11 M</span> <span class="text-xs text-slate-500">THB</span>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <div>
-                        <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold mb-2">Pillar 3</span>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Govern & Empower</h3>
-                        <p class="text-sm text-slate-500">สร้างธรรมาภิบาลและพัฒนาทักษะบุคลากรสู่ยุค AI</p>
-                    </div>
-                    <div class="mt-4 text-right">
-                        <span class="text-2xl font-bold text-slate-800">0.60 M</span> <span class="text-xs text-slate-500">THB</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4">สัดส่วนงบประมาณ (Budget Allocation)</h3>
-                    <div class="chart-container">
-                        <canvas id="budgetChart"></canvas>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4">หลักการ Logic Model</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-start p-3 bg-slate-50 rounded-lg">
-                            <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs mr-3 shrink-0">1</div>
-                            <div>
-                                <h4 class="font-semibold text-slate-700 text-sm">Inputs (ปัจจัยนำเข้า)</h4>
-                                <p class="text-xs text-slate-500">ทรัพยากรที่ต้องใช้ เช่น เงิน คน เวลา</p>
-                            </div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span id="detail-pillar-id" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600 uppercase tracking-wider">Pillar X</span>
+                            <span id="detail-pillar-weight" class="text-xs text-slate-500 font-mono">Weight: 0%</span>
                         </div>
-                        <div class="flex items-start p-3 bg-blue-50 rounded-lg">
-                            <div class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold text-xs mr-3 shrink-0">2</div>
-                            <div>
-                                <h4 class="font-semibold text-slate-700 text-sm">Activities (กิจกรรม)</h4>
-                                <p class="text-xs text-slate-500">กระบวนการดำเนินงานที่ต้องทำ</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start p-3 bg-indigo-50 rounded-lg">
-                            <div class="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-600 font-bold text-xs mr-3 shrink-0">3</div>
-                            <div>
-                                <h4 class="font-semibold text-slate-700 text-sm">Outputs (ผลผลิต)</h4>
-                                <p class="text-xs text-slate-500">สิ่งที่ได้รับทันทีที่เป็นรูปธรรม (นับได้)</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start p-3 bg-emerald-50 rounded-lg">
-                            <div class="w-8 h-8 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-600 font-bold text-xs mr-3 shrink-0">4</div>
-                            <div>
-                                <h4 class="font-semibold text-slate-700 text-sm">Outcomes & Impacts</h4>
-                                <p class="text-xs text-slate-500">ประโยชน์ที่เกิดขึ้นจริงต่อ User และองค์กร</p>
-                            </div>
-                        </div>
+                        <h2 id="detail-pillar-title" class="text-2xl font-bold text-slate-800">Pillar Title Here</h2>
                     </div>
-                </div>
-            </div>
-        </section>
+                    <div class="mt-4 md:mt-0 text-right">
+                        <p class="text-xs text-slate-500 uppercase">Total Budget</p>
+                        <p id="detail-pillar-budget" class="text-2xl font-bold text-slate-800 font-mono">0.00 THB</p>
+                    </div>
+                </header>
 
-        <!-- VIEW: PILLARS (Template for Modernize, Stabilize, Govern) -->
-        <section id="view-pillar" class="hidden fade-in space-y-6">
-            <header class="mb-6 border-b border-slate-200 pb-4">
-                <div class="flex items-center space-x-3 mb-2">
-                    <span id="pillar-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">Pillar</span>
-                    <h2 id="pillar-title" class="text-2xl font-bold text-slate-800">Pillar Title</h2>
-                </div>
-                <p id="pillar-desc" class="text-slate-600">Pillar Description</p>
-            </header>
-
-            <!-- Project Selector -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" id="project-list">
-                <!-- Projects will be injected here via JS -->
-            </div>
-
-            <!-- Logic Model Visualizer (The "Detail" View) -->
-            <div id="logic-model-container" class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden hidden">
-                <div class="bg-slate-800 px-6 py-4 flex justify-between items-center">
-                    <h3 id="project-detail-title" class="text-white font-bold text-lg">Project Name</h3>
-                    <span id="project-detail-budget" class="text-slate-300 text-sm font-mono">฿ 0.00</span>
-                </div>
-                <div class="p-6">
-                    <div class="mb-6">
-                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Objective</h4>
-                        <p id="project-objective" class="text-slate-700 font-medium text-lg border-l-4 border-sky-500 pl-4 bg-sky-50 py-2 rounded-r">
-                            Objective text goes here...
-                        </p>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Left: Project List -->
+                    <div class="lg:col-span-4 space-y-4" id="project-list-container">
+                        <!-- Project Cards Injected Here -->
                     </div>
 
-                    <!-- The Logic Flow -->
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
-                        <!-- Connecting Line for Desktop -->
-                        <div class="hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-slate-100 -z-10 transform -translate-y-1/2"></div>
-
-                        <!-- Step 1: Inputs -->
-                        <div class="logic-step bg-white p-4 rounded-lg border border-slate-200 hover:border-slate-300">
-                            <div class="flex items-center mb-3">
-                                <span class="w-6 h-6 rounded bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold mr-2">1</span>
-                                <h5 class="font-bold text-slate-700 text-sm">Inputs</h5>
-                            </div>
-                            <ul id="list-inputs" class="text-xs text-slate-600 space-y-2 list-disc list-inside"></ul>
-                        </div>
-
-                        <!-- Step 2: Activities -->
-                        <div class="logic-step bg-white p-4 rounded-lg border border-blue-100 hover:border-blue-300 shadow-sm md:col-span-1">
-                            <div class="flex items-center mb-3">
-                                <span class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold mr-2">2</span>
-                                <h5 class="font-bold text-blue-700 text-sm">Activities</h5>
-                            </div>
-                            <ul id="list-activities" class="text-xs text-slate-600 space-y-2 list-disc list-inside"></ul>
-                        </div>
-
-                        <!-- Arrow -->
-                        <div class="hidden md:flex items-center justify-center text-slate-300">➜</div>
-                        
-                        <!-- Step 3: Outputs -->
-                        <div class="logic-step bg-white p-4 rounded-lg border border-indigo-100 hover:border-indigo-300 shadow-sm md:col-span-1" style="grid-column: span 1 / auto;">
-                             <div class="flex items-center mb-3">
-                                <span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold mr-2">3</span>
-                                <h5 class="font-bold text-indigo-700 text-sm">Outputs</h5>
-                            </div>
-                            <ul id="list-outputs" class="text-xs text-slate-600 space-y-2 list-disc list-inside"></ul>
-                        </div>
-
-                        <!-- Step 4: Outcomes & Impacts (Combined for space) -->
-                        <div class="logic-step bg-gradient-to-br from-emerald-50 to-white p-4 rounded-lg border border-emerald-200 hover:border-emerald-400 shadow-md md:col-span-1">
-                             <div class="flex items-center mb-3">
-                                <span class="w-6 h-6 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold mr-2">4</span>
-                                <h5 class="font-bold text-emerald-700 text-sm">Results</h5>
-                            </div>
-                            <div class="space-y-3">
+                    <!-- Right: Logic Model Visualization -->
+                    <div class="lg:col-span-8">
+                        <div id="logic-model-view" class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden min-h-[500px] sticky top-6">
+                            <!-- Header -->
+                            <div class="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center">
                                 <div>
-                                    <p class="text-[10px] uppercase font-bold text-emerald-600 mb-1">Outcomes</p>
-                                    <ul id="list-outcomes" class="text-xs text-slate-700 space-y-1 list-disc list-inside"></ul>
+                                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Project Logic Model</p>
+                                    <h3 id="logic-project-name" class="text-white font-bold text-lg">Select a project...</h3>
                                 </div>
-                                <div class="border-t border-emerald-100 pt-2">
-                                    <p class="text-[10px] uppercase font-bold text-emerald-600 mb-1">Impacts</p>
-                                    <ul id="list-impacts" class="text-xs text-slate-700 space-y-1 list-disc list-inside"></ul>
+                                <div class="text-right">
+                                    <span id="logic-project-owner" class="text-xs text-sky-400 bg-slate-900/50 px-2 py-1 rounded">Owner</span>
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="p-6">
+                                <!-- Objective Box -->
+                                <div class="mb-8 p-4 bg-sky-50 border-l-4 border-sky-500 rounded-r-lg">
+                                    <h4 class="text-xs font-bold text-sky-800 uppercase mb-1">Objective (วัตถุประสงค์)</h4>
+                                    <p id="logic-objective" class="text-sm text-slate-700 font-medium">คำอธิบายวัตถุประสงค์โครงการ...</p>
+                                </div>
+
+                                <!-- Flow -->
+                                <div class="relative space-y-6">
+                                    <!-- Connecting Line (Vertical) -->
+                                    <div class="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-200 -z-10"></div>
+
+                                    <!-- Step 1: Inputs -->
+                                    <div class="logic-step relative pl-12">
+                                        <div class="absolute left-0 top-0 w-8 h-8 bg-white border-2 border-slate-300 rounded-full flex items-center justify-center font-bold text-xs text-slate-500 z-10">1</div>
+                                        <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                                            <h5 class="font-bold text-slate-800 text-sm mb-2 flex items-center">
+                                                <span class="w-2 h-2 rounded-full bg-slate-400 mr-2"></span> Inputs (ปัจจัยนำเข้า)
+                                            </h5>
+                                            <ul id="logic-inputs" class="list-disc list-inside text-xs text-slate-600 space-y-1"></ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 2: Activities (Milestones) -->
+                                    <div class="logic-step relative pl-12">
+                                        <div class="absolute left-0 top-0 w-8 h-8 bg-blue-100 border-2 border-blue-400 rounded-full flex items-center justify-center font-bold text-xs text-blue-700 z-10">2</div>
+                                        <div class="bg-blue-50/50 border border-blue-200 p-4 rounded-lg shadow-sm">
+                                            <h5 class="font-bold text-blue-800 text-sm mb-2 flex items-center justify-between">
+                                                <div class="flex items-center"><span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> Activities (Milestones)</div>
+                                                <span class="text-[10px] bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded">Tracking</span>
+                                            </h5>
+                                            <div id="logic-activities" class="space-y-2"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3: Outputs -->
+                                    <div class="logic-step relative pl-12">
+                                        <div class="absolute left-0 top-0 w-8 h-8 bg-indigo-100 border-2 border-indigo-400 rounded-full flex items-center justify-center font-bold text-xs text-indigo-700 z-10">3</div>
+                                        <div class="bg-indigo-50/50 border border-indigo-200 p-4 rounded-lg shadow-sm">
+                                            <h5 class="font-bold text-indigo-800 text-sm mb-2 flex items-center">
+                                                <span class="w-2 h-2 rounded-full bg-indigo-500 mr-2"></span> Outputs (ผลผลิต)
+                                            </h5>
+                                            <p id="logic-outputs" class="text-xs text-slate-700"></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 4: Outcomes & Impacts -->
+                                    <div class="logic-step relative pl-12">
+                                        <div class="absolute left-0 top-0 w-8 h-8 bg-emerald-100 border-2 border-emerald-400 rounded-full flex items-center justify-center font-bold text-xs text-emerald-700 z-10">4</div>
+                                        <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-200 p-4 rounded-lg shadow-md">
+                                            <h5 class="font-bold text-emerald-800 text-sm mb-3 flex items-center">
+                                                <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span> Outcomes & Impacts
+                                            </h5>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <p class="text-[10px] uppercase font-bold text-emerald-600 mb-1">Outcomes (ผลลัพธ์)</p>
+                                                    <ul id="logic-outcomes" class="list-disc list-inside text-xs text-slate-700 space-y-1"></ul>
+                                                </div>
+                                                <div class="md:border-l md:border-emerald-100 md:pl-4">
+                                                    <p class="text-[10px] uppercase font-bold text-emerald-600 mb-1">Impacts (ผลกระทบ)</p>
+                                                    <ul id="logic-impacts" class="list-disc list-inside text-xs text-slate-700 space-y-1"></ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- VIEW: MEASUREMENTS -->
-        <section id="view-measurements" class="hidden fade-in space-y-6">
-            <header class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800 mb-2">ตารางสรุปการวัดผล (Measurement Matrix)</h2>
-                <p class="text-slate-600">เปรียบเทียบความแตกต่างระหว่าง KPI มาตรฐานราชการ และ OKR ที่มุ่งเน้นผลสัมฤทธิ์</p>
-            </header>
+            <!-- VIEW: MEASUREMENTS -->
+            <section id="view-measurements" class="hidden fade-in max-w-6xl mx-auto">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">ตารางวัดผล (Measurement Matrix)</h2>
+                    <p class="text-slate-600">เปรียบเทียบ KPI มาตรฐาน (Standard) กับ OKR ที่ท้าทาย (Challenge)</p>
+                </header>
 
-            <div class="overflow-hidden bg-white rounded-xl shadow border border-slate-200">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">โครงการ</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 border-b-2 border-blue-200">KPI (Standard)</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-emerald-600 uppercase tracking-wider bg-emerald-50 border-b-2 border-emerald-200">OKR (Challenge)</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200" id="measurement-table-body">
-                        <!-- JS injected -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                    <h4 class="font-bold text-blue-800 mb-2">KPI (Key Performance Indicator)</h4>
-                    <p class="text-sm text-blue-700">เน้นการวัด Output และ Process เช่น การเบิกจ่าย, การส่งมอบงานตามกำหนด, จำนวนผู้เข้าอบรม เหมาะสำหรับงาน Routine และงานตามระเบียบ</p>
+                <div class="bg-white shadow-sm rounded-lg border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Project</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Weight</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50">Standard KPI (Output)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-emerald-600 uppercase tracking-wider bg-emerald-50">Challenge OKR (Outcome)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200" id="measurement-table-body">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-                    <h4 class="font-bold text-emerald-800 mb-2">OKR (Objectives and Key Results)</h4>
-                    <p class="text-sm text-emerald-700">เน้นการวัด Outcome และ Impact เช่น ความพึงพอใจ, การลดเวลา Downtime, การเปลี่ยนแปลงพฤติกรรม เหมาะสำหรับงานพัฒนาและสร้างสรรค์</p>
+            </section>
+
+            <!-- VIEW: RISKS -->
+            <section id="view-risks" class="hidden fade-in max-w-6xl mx-auto">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">การบริหารความเสี่ยง (Risk Management)</h2>
+                    <p class="text-slate-600">ประเด็นความเสี่ยงหลักและมาตรการรับมือ</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="risks-container">
+                    <!-- JS Injected -->
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- VIEW: RISKS -->
-        <section id="view-risks" class="hidden fade-in space-y-6">
-            <header class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800 mb-2">การบริหารความเสี่ยง (Risk Management)</h2>
-                <p class="text-slate-600">แผนการรับมือกับความเสี่ยงหลักที่อาจกระทบต่อความสำเร็จของโครงการ</p>
-            </header>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="risk-container">
-                <!-- JS Injected -->
-            </div>
-        </section>
-
+        </div>
     </main>
 
     <script>
-        // --- DATA STORE ---
-        const projects = {
-            'modernize': {
-                id: 'modernize',
-                title: '1. Modernize (การปรับปรุงโครงสร้างพื้นฐาน)',
-                desc: 'ปรับปรุงอุปกรณ์ Hardware และวางแผนโครงสร้างพื้นฐานเพื่อรองรับการทำงานรูปแบบใหม่',
-                color: 'sky',
-                items: [
+        // --- DATA STORE (Updated Weights & Activities) ---
+        const pillars = {
+            'pillar-1': {
+                id: '1',
+                title: 'Infrastructure',
+                budget: '6,197,100',
+                weight: '82%', // 55% + 25% + 2%
+                projects: [
                     {
                         id: '1.1',
-                        name: '1.1 จัดหาและบริหารวงจรชีวิตสินทรัพย์ดิจิทัล (Hardware Refresh)',
-                        budget: '2,084,800',
-                        objective: 'เพื่อทดแทนอุปกรณ์ที่เสื่อมสภาพ (EOL) และเพิ่มประสิทธิภาพการทำงานแบบ Hybrid Work',
-                        inputs: ['งบลงทุน 2.08 ล้านบาท', 'ทีมงานจัดซื้อและตรวจรับ (3-5 คน)', 'ระยะเวลาจัดหา 3 เดือน (Q1-Q2)'],
-                        activities: ['สำรวจสเปกและกำหนดราคากลาง (TOR)', 'ประมูลผ่านระบบ e-GP', 'ตรวจรับและติดตั้ง Software มาตรฐาน', 'ส่งมอบให้ User'],
-                        outputs: ['Notebook ใหม่ จำนวน 24 เครื่อง', 'Tablet จำนวน 18 เครื่อง', 'MacBook Pro จำนวน 2 เครื่อง'],
-                        outcomes: ['User สามารถทำงานนอกสถานที่ได้คล่องตัวขึ้น (Mobility)', 'ลดเวลา Boot เครื่องและประมวลผลลง 50%'],
-                        impacts: ['เพิ่ม Productivity ขององค์กร', 'ภาพลักษณ์องค์กรมีความทันสมัย'],
-                        kpi: 'ส่งมอบเครื่องได้ครบ 100% ภายในไตรมาส 3',
-                        okr: 'Satisfaction Score (คะแนนความพึงพอใจ) ต่ออุปกรณ์ใหม่ > 4.5/5.0'
+                        name: '1.1 บำรุงรักษาเชิงป้องกัน (MA)',
+                        owner: 'IT Support Team',
+                        status: 'On Track',
+                        budget: '4,112,300',
+                        weight: '55%',
+                        objective: 'เพื่อให้ระบบทำงานต่อเนื่อง ไม่หยุดชะงัก',
+                        inputs: ['งบดำเนินงาน', 'ทีมงาน IT Support', 'Vendor คู่สัญญา'],
+                        activities: [
+                            { task: 'ต่ออายุ License/สัญญา', progress: '20%' },
+                            { task: 'PM & Report Q1', progress: '20%' },
+                            { task: 'PM & Report Q2', progress: '20%' },
+                            { task: 'PM & Report Q3', progress: '20%' },
+                            { task: 'PM & Report Q4', progress: '20%' }
+                        ],
+                        outputs: 'รายงานผลการบำรุงรักษา 4 ฉบับ/ปี',
+                        outcomes: ['ลดความเสี่ยง Hardware Failure', 'งานไม่สะดุดจากระบบล่ม'],
+                        impacts: ['สร้างความเชื่อมั่นให้ Stakeholder', 'ลดความเสี่ยงด้านลิขสิทธิ์'],
+                        kpi: 'Uptime > 99.5%',
+                        okr: 'Zero Unplanned Downtime'
                     },
                     {
                         id: '1.2',
-                        name: '1.2 ศึกษาและออกแบบระบบโครงสร้างพื้นฐาน (Future Blueprint)',
-                        budget: '0 (Internal)',
-                        objective: 'เตรียมความพร้อมด้านเทคนิคและงบประมาณสำหรับการเปลี่ยนถ่ายระบบ Server ในปี 2570',
-                        inputs: ['เวลาของ Senior System Engineer', 'ข้อมูล Log การใช้งานระบบปัจจุบัน'],
-                        activities: ['วิเคราะห์ Workload ปัจจุบัน (Sizing)', 'เชิญ Vendor นำเสนอ Solution (Market Sounding)', 'เขียน Blueprint และ Spec ของบฯ ปี 70'],
-                        outputs: ['เอกสารพิมพ์เขียวระบบ (System Blueprint) 1 ฉบับ', 'เล่ม TOR และราคากลาง ฉบับสมบูรณ์ 1 ชุด'],
-                        outcomes: ['ได้สเปกที่ถูกต้องและคุ้มค่า ไม่ถูกล็อกสเปก', 'ฝ่ายบริหารมีข้อมูลตัดสินใจแม่นยำ'],
-                        impacts: ['ความต่อเนื่องทางธุรกิจ (Business Continuity) ปีหน้า', 'ลดความเสี่ยงการจัดซื้อผิดพลาด'],
-                        kpi: 'เอกสาร TOR แล้วเสร็จและอนุมัติภายใน Q4/2569',
-                        okr: 'ออกแบบระบบที่สามารถลด TCO ของปีหน้าลงได้ 10%'
+                        name: '1.2 จัดหาและบริหารวงจรชีวิต (Hardware Refresh)',
+                        owner: 'Committees',
+                        status: 'Delayed',
+                        budget: '2,084,800',
+                        weight: '25%',
+                        objective: 'ทดแทนเครื่อง EOL และรองรับ Hybrid Work',
+                        inputs: ['งบลงทุน 2.08 ล้าน', 'คณะกรรมการจัดซื้อ/ตรวจรับ'],
+                        activities: [
+                            { task: 'สำรวจ & กำหนด Spec', progress: '10%' },
+                            { task: 'อนุมัติ TOR & ราคากลาง', progress: '20%' },
+                            { task: 'ได้ผู้ชนะ e-Bidding', progress: '30%' },
+                            { task: 'ลงนามสัญญา', progress: '10%' },
+                            { task: 'ส่งมอบ & ตรวจรับ', progress: '30%' }
+                        ],
+                        outputs: 'คอมพิวเตอร์ใหม่ส่งมอบ 100% (44 เครื่อง)',
+                        outcomes: ['Boot เครื่องเร็วขึ้น', 'Ticket แจ้งซ่อมลดลง'],
+                        impacts: ['เพิ่ม Productivity', 'ภาพลักษณ์ Agile Gov'],
+                        kpi: 'เบิกจ่ายเสร็จสิ้นภายใน Q3',
+                        okr: 'Satisfaction Score > 4.5/5.0'
+                    },
+                    {
+                        id: '1.3',
+                        name: '1.3 ศึกษาและออกแบบระบบ (HCI Study)',
+                        owner: 'System Engineer',
+                        status: 'On Track',
+                        budget: '0',
+                        weight: '2%',
+                        objective: 'เตรียมพร้อมด้านเทคนิค/งบฯ ปีหน้า',
+                        inputs: ['เวลาของ Engineer', 'Log Data'],
+                        activities: [
+                            { task: 'Sizing & Requirement', progress: '30%' },
+                            { task: 'Market Sounding', progress: '30%' },
+                            { task: 'Final Blueprint & TOR', progress: '40%' }
+                        ],
+                        outputs: 'TOR และราคากลางฉบับสมบูรณ์',
+                        outcomes: ['ได้สเปกถูกต้อง คุ้มค่า', 'ไม่ถูกล็อกสเปก'],
+                        impacts: ['Business Continuity ปี 2570'],
+                        kpi: 'เอกสารเสร็จภายใน Q4',
+                        okr: 'ลด TCO ปีหน้าลง 10%'
                     }
                 ]
             },
-            'stabilize': {
-                id: 'stabilize',
-                title: '2. Stabilize (รักษาเสถียรภาพ)',
-                desc: 'การดูแลรักษาระบบให้มีความมั่นคงปลอดภัยและพร้อมใช้งานตลอดเวลา',
-                color: 'emerald',
-                items: [
+            'pillar-2': {
+                id: '2',
+                title: 'Information Systems',
+                budget: '0 (Included in MA)',
+                weight: '3%',
+                projects: [
                     {
                         id: '2.1',
-                        name: '2.1 บำรุงรักษาเชิงป้องกันและลิขสิทธิ์ (Preventive Maintenance)',
-                        budget: '4,112,300',
-                        objective: 'เพื่อให้ระบบสารสนเทศหลักทำงานได้อย่างต่อเนื่อง ไม่หยุดชะงัก และถูกกฎหมายลิขสิทธิ์',
-                        inputs: ['งบดำเนินงาน 4.11 ล้านบาท', 'Vendor ผู้ให้บริการ', 'ทีม IT Support'],
-                        activities: ['ต่ออายุ License (Google, Adobe, Zoom)', 'PM Server รายไตรมาส', 'Monitor ระบบ 24x7'],
-                        outputs: ['รายงานผลการบำรุงรักษา (PM Report) 4 ฉบับ', 'สิทธิ์การใช้งาน Software ครบจำนวน User'],
-                        outcomes: ['ระบบมีความพร้อมใช้ (Availability) ตลอดเวลาทำการ', 'พนักงานมี Software ที่อัปเดตเสมอ'],
-                        impacts: ['สร้างความเชื่อมั่นให้กับ Stakeholder', 'ลดความเสี่ยงทางกฎหมายเรื่องลิขสิทธิ์'],
-                        kpi: 'Uptime Availability > 99.5%',
-                        okr: 'Zero Unplanned Downtime (ไม่มีระบบล่มโดยไม่แจ้งล่วงหน้า)'
+                        name: '2.1 บริหารจัดการข้อมูลบนคลาวด์ & Dashboard',
+                        owner: 'IT Admin / Data Team',
+                        status: 'Stable',
+                        budget: '0',
+                        weight: '3%',
+                        objective: 'ข้อมูลปลอดภัยและนำไปใช้ประโยชน์ได้',
+                        inputs: ['พื้นที่ Cloud', 'ข้อมูลดิบ'],
+                        activities: [
+                            { task: 'Setup Backup Routine', progress: '20%' },
+                            { task: 'Dashboard Requirement', progress: '20%' },
+                            { task: 'Dashboard Dev', progress: '40%' },
+                            { task: 'Deploy & UAT', progress: '20%' }
+                        ],
+                        outputs: 'พื้นที่จัดเก็บเพียงพอ, Dashboard 1 ระบบ',
+                        outcomes: ['ข้อมูลไม่สูญหาย (Zero Data Loss)', 'ผู้บริหารมีข้อมูลตัดสินใจ'],
+                        impacts: ['Data-Driven Decision Making'],
+                        kpi: 'Recovery Success 100%',
+                        okr: 'User เข้าใช้งาน Dashboard > 50%'
                     }
                 ]
             },
-            'govern': {
-                id: 'govern',
-                title: '3. Govern & Empower (ธรรมาภิบาลและบุคลากร)',
-                desc: 'พัฒนาคนให้พร้อมรับมือภัยไซเบอร์และ AI พร้อมสร้างธรรมาภิบาลในการทำงาน',
-                color: 'indigo',
-                items: [
+            'pillar-3': {
+                id: '3',
+                title: 'Cybersecurity',
+                budget: '0',
+                weight: '5%', // 3% + 2%
+                projects: [
                     {
                         id: '3.1',
-                        name: '3.1 พัฒนาทักษะดิจิทัล (Digital Literacy & AI)',
+                        name: '3.1 ยกระดับความมั่นคงปลอดภัย (NIST)',
+                        owner: 'Security Team',
+                        status: 'On Process',
+                        budget: '0',
+                        weight: '3%',
+                        objective: 'ปิดช่องโหว่ตามมาตรฐาน NIST',
+                        inputs: ['Tools Scan', 'เวลาทีมงาน'],
+                        activities: [
+                            { task: 'VA Scan & Report', progress: '30%' },
+                            { task: 'User Access Review', progress: '20%' },
+                            { task: 'DR Plan Prep', progress: '20%' },
+                            { task: 'DR Drill Execution', progress: '30%' }
+                        ],
+                        outputs: 'รายงาน VA Scan, รายงาน DR Drill',
+                        outcomes: ['ลดความเสี่ยงถูกโจมตี', 'กู้คืนระบบทันเวลา'],
+                        impacts: ['ความมั่นคงปลอดภัยองค์กรยั่งยืน'],
+                        kpi: 'ช่องโหว่ Critical แก้ไข 100%',
+                        okr: 'ผ่านเกณฑ์ประเมิน NIST ระดับ 3'
+                    },
+                    {
+                        id: '3.2',
+                        name: '3.2 ธรรมาภิบาลผู้ให้บริการ (Vendor Gov)',
+                        owner: 'IT Manager',
+                        status: 'On Process',
+                        budget: '0',
+                        weight: '2%',
+                        objective: 'สร้างกลไกกำกับดูแล Vendor',
+                        inputs: ['สัญญาจ้าง', 'ข้อกำหนด TOR'],
+                        activities: [
+                            { task: 'กำหนดเงื่อนไข TOR', progress: '20%' },
+                            { task: 'SLA Review รายเดือน', progress: '40%' },
+                            { task: 'ส่งมอบคู่มือฉบับสมบูรณ์', progress: '40%' }
+                        ],
+                        outputs: 'คู่มือปฏิบัติงานระบบจาก Vendor',
+                        outcomes: ['ลดการพึ่งพาตัวบุคคล (Vendor Lock-in)'],
+                        impacts: ['องค์กรเป็นเจ้าของระบบที่แท้จริง'],
+                        kpi: 'Vendor ปฏิบัติตามกฎ 100%',
+                        okr: 'Zero Contract Dispute'
+                    }
+                ]
+            },
+            'pillar-4': {
+                id: '4',
+                title: 'Data Governance',
+                budget: '0',
+                weight: '2%',
+                projects: [
+                    {
+                        id: '4.1',
+                        name: '4.1 ธรรมาภิบาลข้อมูล & PDPA',
+                        owner: 'DPO / Working Group',
+                        status: 'On Process',
+                        budget: '0',
+                        weight: '2%',
+                        objective: 'จัดระเบียบและคุ้มครองข้อมูล',
+                        inputs: ['คณะทำงาน', 'กฎหมาย PDPA'],
+                        activities: [
+                            { task: 'ตั้งคณะทำงาน', progress: '10%' },
+                            { task: 'ร่างนโยบาย', progress: '30%' },
+                            { task: 'ทำ Data Catalog', progress: '40%' },
+                            { task: 'ประกาศใช้นโยบาย', progress: '20%' }
+                        ],
+                        outputs: 'นโยบายข้อมูล, ผังบัญชีข้อมูล',
+                        outcomes: ['ข้อมูลถูกต้อง (Data Quality)', 'ลดความเสี่ยงกฎหมาย'],
+                        impacts: ['Compliance ตามกฎหมาย'],
+                        kpi: 'Data Breach = 0 ครั้ง',
+                        okr: '100% Staff ผ่านการทดสอบ PDPA'
+                    }
+                ]
+            },
+            'pillar-5': {
+                id: '5',
+                title: 'People',
+                budget: '605,000',
+                weight: '8%',
+                projects: [
+                    {
+                        id: '5.1',
+                        name: '5.1 พัฒนาทักษะดิจิทัล (Digital Literacy)',
+                        owner: 'HR / IT Training',
+                        status: 'On Track',
                         budget: '605,000',
-                        objective: 'ยกระดับทักษะบุคลากรให้รู้เท่าทันภัยไซเบอร์ และสามารถใช้ AI ช่วยงานได้',
-                        inputs: ['งบฝึกอบรม 0.6 ล้านบาท', 'วิทยากรภายนอก'],
-                        activities: ['Workshop Cyber Awareness & PDPA', 'Workshop Generative AI for Office', 'Phishing Simulation'],
-                        outputs: ['ผู้ผ่านการอบรม > 80% ของพนักงาน', 'หลักสูตรอบรม 25 หลักสูตร'],
-                        outcomes: ['พนักงานไม่ตกเป็นเหยื่อ Phishing', 'พนักงานเริ่มนำ AI มาช่วยงานจริง'],
-                        impacts: ['วัฒนธรรมองค์กรแบบ Data-Driven', 'ลดความเสี่ยงข้อมูลรั่วไหลจาก Human Error'],
-                        kpi: 'จำนวนผู้เข้าอบรมครบตามเป้าหมาย (80%)',
-                        okr: '100% ของฝ่ายงาน มีการนำเครื่องมือ AI ไปปรับปรุง Process'
+                        weight: '8%',
+                        objective: 'พัฒนาคนรับมือภัยไซเบอร์และ AI',
+                        inputs: ['งบฝึกอบรม', 'วิทยากร'],
+                        activities: [
+                            { task: 'วางแผนหลักสูตร', progress: '20%' },
+                            { task: 'Workshop Phase 1: Security', progress: '30%' },
+                            { task: 'Workshop Phase 2: AI', progress: '30%' },
+                            { task: 'Phishing Test & Report', progress: '20%' }
+                        ],
+                        outputs: 'ผู้ผ่านอบรม > 80% (25 หลักสูตร)',
+                        outcomes: ['พนักงานรู้เท่าทันภัยไซเบอร์', 'ใช้ AI เป็น'],
+                        impacts: ['วัฒนธรรมองค์กรดิจิทัล'],
+                        kpi: 'Phishing Click Rate < 5%',
+                        okr: '100% Departments ใช้ AI ในงานจริง'
                     }
                 ]
             }
@@ -423,197 +582,245 @@
             {
                 title: 'การจัดซื้อ Hardware ล่าช้า',
                 level: 'High',
-                impact: 'เบิกจ่ายไม่ทัน Q3, ของส่งมอบช้ากว่ากำหนด',
-                mitigation: 'เร่งทำ TOR ในเดือน ก.พ. และใช้ e-Market หากสเปกเป็นมาตรฐาน'
+                impact: 'เบิกจ่ายไม่ทัน Q3, ของส่งมอบช้ากระทบงาน',
+                mitigation: 'เร่งทำ TOR ภายใน ก.พ. และใช้วิธี e-Market สำหรับสินค้ามาตรฐาน'
             },
             {
-                title: 'User Adoption (ใช้เครื่องมือใหม่ไม่เป็น)',
+                title: 'User Adoption (เครื่องมือใหม่)',
                 level: 'Medium',
-                impact: 'เกิดการต่อต้าน, งานสะดุด, ROI ต่ำ',
-                mitigation: 'ทำ Change Management และตั้งทีม "Digital Champion" ในแต่ละฝ่ายเพื่อประกบสอนเพื่อนร่วมงาน'
+                impact: 'เกิดแรงต้านในการใช้งาน, ความคุ้มค่าต่ำ',
+                mitigation: 'ตั้ง Digital Champion ในแต่ละฝ่ายเพื่อประกบสอนและช่วยเหลือ'
             },
             {
-                title: 'งบประมาณปี 2570 ไม่ผ่าน',
+                title: 'งบประมาณปี 2570 ไม่ได้รับอนุมัติ',
                 level: 'High',
-                impact: 'ระบบเก่าเสี่ยงพังเสียหาย ไม่มีเงินเปลี่ยน',
-                mitigation: 'เก็บ Log ความผิดพลาดของระบบเดิมเพื่อใช้เป็นหลักฐาน (Evidence-based) ในการของบฯ'
+                impact: 'ระบบ HCI เก่าเสี่ยงพังเสียหาย ไม่มีงบเปลี่ยน',
+                mitigation: 'เก็บ Log ความผิดพลาดเพื่อทำ Evidence-based Budgeting'
             }
         ];
 
-        // --- APP LOGIC ---
+        // --- UI LOGIC ---
 
         function init() {
-            renderBudgetChart();
-            renderRiskCards();
-            renderMeasurementTable();
-            // Default view
-            switchView('overview');
+            renderNav();
+            renderChart();
+            renderRisks();
+            renderMeasurements();
+            switchView('dashboard'); // Default view
         }
 
-        function switchView(viewName) {
-            // Hide all views
-            const views = ['overview', 'pillar', 'measurements', 'risks'];
-            views.forEach(v => {
-                document.getElementById('view-' + (v === 'modernize' || v === 'stabilize' || v === 'govern' ? 'pillar' : v)).classList.add('hidden');
+        function renderNav() {
+            const nav = document.getElementById('sidebar-nav');
+            const mobileNav = document.getElementById('mobile-nav-list');
+            
+            // Common links
+            const links = [
+                { id: 'dashboard', label: '📊 Dashboard Overview', color: 'text-slate-600' },
+                { spacer: true, label: 'Strategic Pillars' },
+                { id: 'pillar-1', label: '1. Infrastructure', color: 'text-blue-600' },
+                { id: 'pillar-2', label: '2. Info Systems', color: 'text-cyan-600' },
+                { id: 'pillar-3', label: '3. Cybersecurity', color: 'text-indigo-600' },
+                { id: 'pillar-4', label: '4. Data Governance', color: 'text-violet-600' },
+                { id: 'pillar-5', label: '5. People', color: 'text-pink-600' },
+                { spacer: true, label: 'Analysis' },
+                { id: 'measurements', label: '📈 Measurements (KPI/OKR)', color: 'text-slate-600' },
+                { id: 'risks', label: '⚠️ Risk Management', color: 'text-slate-600' }
+            ];
+
+            const createBtn = (l, isMobile) => {
+                if (l.spacer) {
+                    return `<div class="px-6 py-2 mt-2 text-xs font-bold text-slate-400 uppercase tracking-wider">${l.label}</div>`;
+                }
+                return `<button onclick="switchView('${l.id}'); ${isMobile ? 'toggleMobileMenu()' : ''}" 
+                        id="nav-${l.id}${isMobile ? '-m' : ''}" 
+                        class="w-full text-left px-6 py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors ${l.color} border-r-4 border-transparent">
+                        ${l.label}
+                    </button>`;
+            };
+
+            nav.innerHTML = links.map(l => createBtn(l, false)).join('');
+            mobileNav.innerHTML = links.map(l => createBtn(l, true)).join('');
+        }
+
+        function switchView(viewId) {
+            // Hide all
+            ['view-dashboard', 'view-pillar-detail', 'view-measurements', 'view-risks'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
             });
+
+            // Handle Pillar View Logic
+            if (viewId.startsWith('pillar-')) {
+                renderPillarDetail(viewId);
+                document.getElementById('view-pillar-detail').classList.remove('hidden');
+            } else {
+                document.getElementById('view-' + viewId).classList.remove('hidden');
+            }
 
             // Update Nav State
-            document.querySelectorAll('nav button').forEach(btn => {
-                btn.classList.remove('active-nav', 'text-sky-700', 'bg-sky-50', 'border-l-4', 'border-sky-600');
-                btn.classList.add('text-slate-600');
-            });
-
-            const activeBtn = document.getElementById('nav-' + viewName);
-            if(activeBtn) {
-                activeBtn.classList.add('active-nav');
-                activeBtn.classList.remove('text-slate-600');
-            }
-
-            // Show selected view
-            if (viewName === 'overview' || viewName === 'measurements' || viewName === 'risks') {
-                document.getElementById('view-' + viewName).classList.remove('hidden');
-            } else {
-                // It's a pillar view
-                renderPillar(viewName);
-                document.getElementById('view-pillar').classList.remove('hidden');
-            }
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-nav'));
+            const activeDesktop = document.getElementById('nav-' + viewId);
+            if(activeDesktop) activeDesktop.classList.add('active-nav');
         }
 
-        function renderPillar(pillarKey) {
-            const data = projects[pillarKey];
-            const colors = {
-                sky: 'bg-sky-100 text-sky-700',
-                emerald: 'bg-emerald-100 text-emerald-700',
-                indigo: 'bg-indigo-100 text-indigo-700'
-            };
+        function renderPillarDetail(pillarId) {
+            const data = pillars[pillarId];
             
             // Header
-            document.getElementById('pillar-badge').className = `px-3 py-1 rounded-full text-xs font-semibold ${colors[data.color]}`;
-            document.getElementById('pillar-badge').innerText = `Pillar ${pillarKey === 'modernize' ? '1' : pillarKey === 'stabilize' ? '2' : '3'}`;
-            document.getElementById('pillar-title').innerText = data.title;
-            document.getElementById('pillar-desc').innerText = data.desc;
+            document.getElementById('detail-pillar-title').innerText = data.title;
+            document.getElementById('detail-pillar-id').innerText = `Pillar ${data.id}`;
+            document.getElementById('detail-pillar-weight').innerText = `Weight: ${data.weight}`;
+            document.getElementById('detail-pillar-budget').innerText = `${data.budget} THB`;
 
-            // Render Project List Cards
-            const container = document.getElementById('project-list');
-            container.innerHTML = '';
+            // Project List
+            const listContainer = document.getElementById('project-list-container');
+            listContainer.innerHTML = '';
             
-            data.items.forEach((item, index) => {
+            data.projects.forEach((proj, idx) => {
                 const card = document.createElement('div');
-                card.className = 'bg-white p-5 rounded-lg border border-slate-200 hover:border-sky-400 hover:shadow-md cursor-pointer transition-all';
-                card.onclick = () => showProjectDetail(pillarKey, index);
+                card.className = 'bg-white p-4 rounded-lg border border-slate-200 hover:border-sky-400 hover:shadow-md cursor-pointer transition-all';
+                card.onclick = () => renderLogicModel(pillarId, idx);
+                
+                // Status Badge Color
+                let statusColor = 'bg-slate-100 text-slate-600';
+                if(proj.status === 'On Track') statusColor = 'bg-emerald-100 text-emerald-700';
+                if(proj.status === 'Delayed') statusColor = 'bg-red-100 text-red-700';
+                if(proj.status === 'On Process') statusColor = 'bg-amber-100 text-amber-700';
+                if(proj.status === 'Stable') statusColor = 'bg-blue-100 text-blue-700';
+
                 card.innerHTML = `
-                    <h4 class="font-bold text-slate-800 mb-2">${item.name}</h4>
-                    <p class="text-xs text-slate-500 mb-3 line-clamp-2">${item.objective}</p>
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="bg-slate-100 px-2 py-1 rounded text-slate-600">งบฯ: ${item.budget}</span>
-                        <span class="text-sky-600 font-semibold hover:underline">ดู Logic Model ➜</span>
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded ${statusColor}">${proj.status}</span>
+                        <span class="text-xs text-slate-400 font-mono">${proj.weight}</span>
+                    </div>
+                    <h4 class="font-bold text-slate-800 mb-1">${proj.name}</h4>
+                    <p class="text-xs text-slate-500 mb-3">${proj.owner}</p>
+                    <div class="text-xs text-sky-600 font-medium flex items-center">
+                        View Logic Model <span class="ml-1">➜</span>
                     </div>
                 `;
-                container.appendChild(card);
+                listContainer.appendChild(card);
             });
 
-            // Hide Detail initially or show first? Let's hide
-            document.getElementById('logic-model-container').classList.add('hidden');
+            // Select first project by default
+            if(data.projects.length > 0) {
+                renderLogicModel(pillarId, 0);
+            }
         }
 
-        function showProjectDetail(pillarKey, index) {
-            const item = projects[pillarKey].items[index];
-            const detailContainer = document.getElementById('logic-model-container');
+        function renderLogicModel(pillarId, projectIdx) {
+            const proj = pillars[pillarId].projects[projectIdx];
             
-            detailContainer.classList.remove('hidden');
-            detailContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            document.getElementById('project-detail-title').innerText = item.name;
-            document.getElementById('project-detail-budget').innerText = `฿ ${item.budget}`;
-            document.getElementById('project-objective').innerText = item.objective;
-
-            // Helper to fill lists
-            const fillList = (id, array) => {
+            document.getElementById('logic-project-name').innerText = proj.name;
+            document.getElementById('logic-project-owner').innerText = proj.owner;
+            document.getElementById('logic-objective').innerText = proj.objective;
+            
+            const fillList = (id, arr) => {
                 const el = document.getElementById(id);
                 el.innerHTML = '';
-                array.forEach(txt => {
-                    const li = document.createElement('li');
-                    li.innerText = txt;
-                    el.appendChild(li);
-                });
+                if(Array.isArray(arr)) {
+                    arr.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerText = item;
+                        el.appendChild(li);
+                    });
+                } else {
+                    el.innerText = arr;
+                }
             };
 
-            fillList('list-inputs', item.inputs);
-            fillList('list-activities', item.activities);
-            fillList('list-outputs', item.outputs);
-            fillList('list-outcomes', item.outcomes);
-            fillList('list-impacts', item.impacts);
+            fillList('logic-inputs', proj.inputs);
+
+            // Handle Milestones (Activities)
+            const activitiesEl = document.getElementById('logic-activities');
+            activitiesEl.innerHTML = '';
+            proj.activities.forEach((act, i) => {
+                const row = document.createElement('div');
+                row.className = 'flex justify-between items-center text-xs text-slate-600 border-b border-blue-100 pb-1 last:border-0';
+                row.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="w-4 text-slate-400 mr-1">${i+1}.</span>
+                        <span>${act.task}</span>
+                    </div>
+                    <span class="font-mono font-bold text-blue-600 bg-blue-50 px-1 rounded">${act.progress}</span>
+                `;
+                activitiesEl.appendChild(row);
+            });
+
+            // Outputs
+            if(Array.isArray(proj.outputs)){
+                 fillList('logic-outputs', proj.outputs);
+            } else {
+                 document.getElementById('logic-outputs').innerHTML = proj.outputs;
+            }
+            
+            fillList('logic-outcomes', proj.outcomes);
+            fillList('logic-impacts', proj.impacts);
         }
 
-        function renderMeasurementTable() {
+        function renderMeasurements() {
             const tbody = document.getElementById('measurement-table-body');
             tbody.innerHTML = '';
             
-            Object.values(projects).forEach(pillar => {
-                pillar.items.forEach(item => {
+            Object.values(pillars).forEach(pillar => {
+                pillar.projects.forEach(proj => {
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50';
                     tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-normal text-sm font-medium text-slate-900">${item.name}</td>
-                        <td class="px-6 py-4 whitespace-normal text-sm text-slate-600 bg-blue-50/30 border-l border-blue-100">${item.kpi}</td>
-                        <td class="px-6 py-4 whitespace-normal text-sm text-slate-600 bg-emerald-50/30 border-l border-emerald-100 font-medium text-emerald-800">${item.okr}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${proj.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">${proj.weight}</td>
+                        <td class="px-6 py-4 text-sm text-blue-700 bg-blue-50/30 border-l-2 border-blue-200">${proj.kpi}</td>
+                        <td class="px-6 py-4 text-sm text-emerald-700 bg-emerald-50/30 border-l-2 border-emerald-200 font-semibold">${proj.okr}</td>
                     `;
                     tbody.appendChild(tr);
                 });
             });
         }
 
-        function renderRiskCards() {
-            const container = document.getElementById('risk-container');
-            container.innerHTML = '';
-            risks.forEach(risk => {
-                const color = risk.level === 'High' ? 'red' : risk.level === 'Medium' ? 'amber' : 'blue';
-                const div = document.createElement('div');
-                div.className = `bg-white rounded-lg border-l-4 border-${color}-500 shadow-sm p-5`;
-                div.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <h4 class="font-bold text-slate-800">${risk.title}</h4>
-                        <span class="px-2 py-1 bg-${color}-100 text-${color}-800 text-[10px] uppercase font-bold rounded">${risk.level}</span>
-                    </div>
-                    <div class="mb-3">
-                        <p class="text-xs font-bold text-slate-400 uppercase">Impact</p>
-                        <p class="text-sm text-slate-600">${risk.impact}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase">Mitigation</p>
-                        <p class="text-sm text-slate-800 font-medium">${risk.mitigation}</p>
+        function renderRisks() {
+            const container = document.getElementById('risks-container');
+            container.innerHTML = risks.map(r => {
+                const color = r.level === 'High' ? 'red' : 'amber';
+                return `
+                    <div class="bg-white rounded-lg border-l-4 border-${color}-500 shadow-sm p-5 hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-bold text-slate-800">${r.title}</h4>
+                            <span class="px-2 py-0.5 bg-${color}-100 text-${color}-800 text-[10px] uppercase font-bold rounded">${r.level}</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Impact</p>
+                                <p class="text-sm text-slate-600">${r.impact}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Mitigation</p>
+                                <p class="text-sm text-slate-800 font-medium">${r.mitigation}</p>
+                            </div>
+                        </div>
                     </div>
                 `;
-                container.appendChild(div);
-            });
+            }).join('');
         }
 
-        function renderBudgetChart() {
+        function renderChart() {
             const ctx = document.getElementById('budgetChart').getContext('2d');
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Modernize', 'Stabilize', 'Govern'],
+                    labels: ['Infrastructure', 'People', 'Other (Internal)'],
                     datasets: [{
-                        data: [2084800, 4112300, 605000],
-                        backgroundColor: [
-                            '#0ea5e9', // Sky 500
-                            '#10b981', // Emerald 500
-                            '#6366f1'  // Indigo 500
-                        ],
-                        borderWidth: 0
+                        data: [6197100, 605000, 0], // Approximate
+                        backgroundColor: ['#3b82f6', '#ec4899', '#94a3b8'],
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { family: 'Sarabun' } }
-                        }
+                        legend: { position: 'bottom', labels: { font: { family: 'Sarabun', size: 10 }, boxWidth: 10 } }
                     },
-                    cutout: '70%'
+                    cutout: '75%'
                 }
             });
         }
@@ -623,7 +830,7 @@
             menu.classList.toggle('hidden');
         }
 
-        // Initialize on load
+        // Init
         window.addEventListener('DOMContentLoaded', init);
 
     </script>
